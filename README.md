@@ -1,6 +1,10 @@
 # CSharpTask
 Microframework with provides tasks functionality into C# console application similar to rake in Ruby
 
+## Package
+
+Package link: https://www.nuget.org/packages/CSharpTask/1.0.0
+
 ## How to implement new task
 
 Check `CSharpTask.ExampleApp/Tasks/Dummy` task example

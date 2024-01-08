@@ -3,7 +3,7 @@ Microframework with provides tasks functionality into C# console application sim
 
 ## Package
 
-Package link: https://www.nuget.org/packages/CSharpTask/1.0.0
+Package link: https://www.nuget.org/packages/CSharpTask/2.0.0
 
 ## How to implement new task
 

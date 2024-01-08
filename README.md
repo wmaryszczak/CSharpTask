@@ -37,3 +37,16 @@ dotnet run --project CSharpTask.ExampleApp/CSharpTask.ExampleApp.csproj -- Dummy
 
 DummyTask.ExecuteAsync Test Setting
 ```
+
+## Entity Framework Note!
+
+EF uses own head-of-control while run command line tools (eg. `ef migrate`), it injects own entry point changing result of `Assembly.GetEntryAssembly()` method as side effect. It will lead to `InvalidOperationException` with message: `Cannot find <task name> in <EF assembly>`.
+
+Use `IHostBuilder UseStartup(this IHostBuilder hostBuilder, string taskName, Assembly? asm)` with `typeof(Program).Assembly` provided into `Assembly? asm` argument to mitigate this error.
+
+```csharp
+  if (!string.IsNullOrWhiteSpace(taskName))
+  {
+    hostBuilder.UseStartup(taskName, typeof(Program).Assembly);
+  }
+```

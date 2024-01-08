@@ -17,14 +17,17 @@ try
   }
 
   var hostBuilder = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(services => //for application dependencies
+    {
+      services.AddOptions();
+    })
     .ConfigureLogging(logging =>
     {
       logging.ClearProviders();
       logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     })
-    .UseStartup(taskName)
-    .UseConsoleLifetime()
-  ;
+    .UseStartup(taskName) //for task dependencies
+    .UseConsoleLifetime();
   using (host = hostBuilder.Build())
   {
     var appLifeTime = host.Services.GetRequiredService<IHostApplicationLifetime>();

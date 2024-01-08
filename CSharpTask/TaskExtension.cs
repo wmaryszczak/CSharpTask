@@ -9,27 +9,34 @@ namespace WMA
   {
     public static IHostBuilder UseStartup(this IHostBuilder hostBuilder, string taskName)
     {
-      hostBuilder.ConfigureServices((ctx, serviceCollection) =>
+      var asm = Assembly.GetEntryAssembly();
+      if (asm == null)
       {
-        var asm = Assembly.GetEntryAssembly();
-        if (asm == null)
+        throw new InvalidOperationException("Cannot use the assembly called from 'Assembly.GetEntryAssembly()'");
+      }
+      return UseStartup(hostBuilder, taskName, asm);
+    }
+
+    public static IHostBuilder UseStartup(this IHostBuilder hostBuilder, string taskName, Assembly? asm)
+    {
+      if (asm == null)
+      {
+        throw new InvalidOperationException("Cannot use the assembly called from 'Assembly.GetEntryAssembly()'");
+      }
+      hostBuilder.ConfigureServices(
+        (ctx, serviceCollection) =>
         {
-          throw new InvalidOperationException("Cannot use the assembly called from 'Assembly.GetEntryAssembly()'");
+          var type = FindStartupType(asm!, taskName);
+
+          var cfgServicesMethod = type.GetMethod("ConfigureServices", new Type[] { typeof(IServiceCollection) });
+
+          var hasConfigCtor = type.GetConstructor(new Type[] { typeof(IConfiguration) }) != null;
+
+          var startUpObj = hasConfigCtor ? Activator.CreateInstance(type, ctx.Configuration) : Activator.CreateInstance(type, null);
+
+          cfgServicesMethod?.Invoke(startUpObj, new object[] { serviceCollection });
         }
-        var type = FindStartupType(asm!, taskName);
-
-        var cfgServicesMethod = type.GetMethod("ConfigureServices",
-          new Type[] { typeof(IServiceCollection) });
-
-        var hasConfigCtor = type.GetConstructor(
-          new Type[] { typeof(IConfiguration) }) != null;
-
-        var startUpObj = hasConfigCtor ?
-          Activator.CreateInstance(type, ctx.Configuration) :
-          Activator.CreateInstance(type, null);
-
-        cfgServicesMethod?.Invoke(startUpObj, new object[] { serviceCollection });
-      });
+      );
       return hostBuilder;
     }
 
@@ -37,7 +44,7 @@ namespace WMA
     {
       var startupName = $"{asm.GetName().Name}.Tasks.{taskName}.{taskName}Startup";
       var type = asm.GetType(startupName, throwOnError: false, ignoreCase: true);
-      if(type == null)
+      if (type == null)
       {
         throw new InvalidOperationException($"Cannot find {startupName} in {asm.FullName}");
       }
@@ -48,9 +55,7 @@ namespace WMA
     {
       foreach (var type in assembly.GetTypesWithHelpAttribute())
       {
-        var dnAttribute = type.GetCustomAttributes(
-            typeof(TaskDescriptionAttribute), true
-        ).FirstOrDefault() as TaskDescriptionAttribute;
+        var dnAttribute = type.GetCustomAttributes(typeof(TaskDescriptionAttribute), true).FirstOrDefault() as TaskDescriptionAttribute;
         if (dnAttribute != null)
         {
           yield return dnAttribute;
@@ -92,7 +97,7 @@ namespace WMA
 
     public static void PrintTasks(this IEnumerable<TaskDescriptionAttribute> tasks)
     {
-      foreach(var t in tasks)
+      foreach (var t in tasks)
       {
         System.Console.WriteLine($"{t.Name}: {t.Description}");
       }

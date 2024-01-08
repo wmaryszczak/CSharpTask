@@ -7,10 +7,7 @@ using WMA;
 
 namespace CSharpTask.ExampleApp.Tasks.Dummy
 {
-  [TaskDescription(
-    name: "Dummy",
-    description: "this is an example of task description"
-  )]
+  [TaskDescription(name: "Dummy", description: "this is an example of task description")]
   public class DummyTask : ITask
   {
     private readonly IOptions<DummyOptions> options;

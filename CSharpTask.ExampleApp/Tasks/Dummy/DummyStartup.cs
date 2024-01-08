@@ -20,9 +20,7 @@ namespace CSharpTask.ExampleApp.Tasks.Dummy
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
-      services.AddOptions();
-      services.Configure<DummyOptions>(
-        this.config.GetSection(DummyOptions.SectionName));
+      services.Configure<DummyOptions>(this.config.GetSection(DummyOptions.SectionName));
       services.AddTransient<ITask, DummyTask>();
     }
   }
